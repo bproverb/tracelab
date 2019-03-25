@@ -1,0 +1,302 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.zipkin.brave</groupId>
+  <artifactId>brave-webmvc4-example</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>brave-webmvc4-example</name>
+  <description>Example using Zipkin and Jaeger to trace Spring Web MVC</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+
+    <spring.version>4.3.8.RELEASE</spring.version>
+    <log4j.version>2.11.1</log4j.version>
+    <brave.version>5.6.3</brave.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.zipkin.brave</groupId>
+        <artifactId>brave-bom</artifactId>
+        <version>${brave.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.6</version>
+    </dependency>
+    
+    <!-- MariaDB4J for mocking MySQL -->
+    <dependency>
+    	<groupId>ch.vorburger.mariaDB4j</groupId>
+    	<artifactId>mariaDB4j</artifactId>
+    	<version>2.4.0</version>
+	</dependency>
+	<dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.15</version>
+    </dependency>
+    <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>2.0.6</version>
+</dependency>
+
+	<!-- MQ access -->
+    <dependency>
+    	<groupId>io.zipkin.brave</groupId>
+    	<artifactId>brave-instrumentation-jms</artifactId>
+	</dependency>
+	<dependency>
+      <groupId>javax.jms</groupId>
+      <artifactId>javax.jms-api</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+   <dependency>
+    <groupId>org.apache.qpid</groupId>
+    <artifactId>qpid-jms-client</artifactId>
+    <version>0.40.0</version>
+	</dependency>
+	<!-- Note that the below is qpid-broker-core and *not* qpid-broker. -->
+  <dependency>
+    <groupId>org.apache.qpid</groupId>
+    <artifactId>qpid-broker-core</artifactId>
+    <version>7.0.0</version>
+  </dependency>
+  <!-- AMQP protocol support is modular. Here we show support for 1.0.  -->
+  <dependency>
+    <groupId>org.apache.qpid</groupId>
+    <artifactId>qpid-broker-plugins-amqp-1-0-protocol</artifactId>
+    <version>7.0.0</version>
+  </dependency>
+  <!-- If a different store type is required it needs to be included here -->
+  <dependency>
+    <groupId>org.apache.qpid</groupId>
+    <artifactId>qpid-broker-plugins-memory-store</artifactId>
+    <version>7.0.0</version>
+  </dependency>
+  
+    
+    <!-- Adds the MVC class and method names to server spans -->
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-instrumentation-spring-webmvc</artifactId>
+    </dependency>
+    <!-- Instruments the underlying HttpClient requests that call the backend -->
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-instrumentation-httpclient</artifactId>
+    </dependency>
+    <!-- Instruments MySQL -->
+    <dependency>
+    	<groupId>io.zipkin.brave</groupId>
+    	<artifactId>brave-instrumentation-mysql8</artifactId>
+    </dependency>
+    
+    <!-- Jaeger instr libs -->
+    <dependency>
+    	<groupId>io.jaegertracing</groupId>
+    	<artifactId>jaeger-client</artifactId>
+    	<version>0.32.0</version>
+	</dependency>
+	<dependency>
+    	<groupId>io.opentracing.contrib</groupId>
+    	<artifactId>opentracing-jdbc</artifactId>
+    	<version>0.0.12</version>
+	</dependency>
+	<dependency>
+    	<groupId>io.opentracing.contrib</groupId>
+    	<artifactId>opentracing-jms-common</artifactId>
+    	<version>0.0.11</version>
+	</dependency>
+	<dependency>
+    	<groupId>io.opentracing.contrib</groupId>
+    	<artifactId>opentracing-jms-1</artifactId>
+    	<version>0.0.11</version>
+	</dependency>
+	<dependency>
+    	<groupId>io.opentracing.contrib</groupId>
+    	<artifactId>opentracing-jms-2</artifactId>
+    	<version>0.0.11</version>
+	</dependency>
+	
+
+    <!-- Integrates so you can use log patterns like %X{traceId}/%X{spanId} -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jul</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jcl</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-context-log4j2</artifactId>
+    </dependency>
+
+    <!-- The below are needed to report traces to http://localhost:9411/api/v2/spans -->
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave-spring-beans</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.zipkin.brave</groupId>
+      <artifactId>brave</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.zipkin.reporter2</groupId>
+      <artifactId>zipkin-sender-okhttp3</artifactId>
+    </dependency>
+  
+  	<!-- JUnit -->
+	<dependency>
+    	<groupId>junit</groupId>
+    	<artifactId>junit</artifactId>
+    	<version>4.12</version>
+    	<scope>test</scope>
+	</dependency>
+  
+  </dependencies>
+  
+  
+  	
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M2</version>
+        <executions>
+          <execution>
+            <id>enforce-java</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <!-- prevent a compile bug accessing CrossOrigin -->
+                  <version>[1.7.0_80,)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.2.1</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+          <packagingExcludes>WEB-INF/lib/servlet-api-*.jar</packagingExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-maven-plugin</artifactId>
+          <version>9.4.8.v20171121</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>frontend</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-maven-plugin</artifactId>
+            <configuration>
+              <httpConnector>
+                <port>8081</port>
+              </httpConnector>
+              <systemProperties>
+                <systemProperty>
+                  <name>zipkin.service</name>
+                  <value>frontend</value>
+                </systemProperty>
+              </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>backend</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-maven-plugin</artifactId>
+            <configuration>
+              <httpConnector>
+                <port>9000</port>
+              </httpConnector>
+              <systemProperties>
+                <systemProperty>
+                  <name>zipkin.service</name>
+                  <value>backend</value>
+                </systemProperty>
+              </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
