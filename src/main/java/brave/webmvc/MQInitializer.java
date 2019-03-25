@@ -47,6 +47,7 @@ public class MQInitializer {
 			s = new Socket("localhost", PORT);
 		}catch (Exception e) {}
 		
+		//Start the embedded qpid broker
 		if (s==null) {
 		try {
 			EmbeddedBroker broker=new EmbeddedBroker();
