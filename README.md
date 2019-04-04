@@ -1,6 +1,8 @@
 # tracelab
 
-Java Spring Web MVC app instrumented with Zipkin and Jaeger. 
+Java Spring Web MVC app instrumented with Zipkin and Jaeger based on the Zipkin Brave example.
+https://github.com/openzipkin/brave-webmvc-example
+
 
 ## Details about the app
 
